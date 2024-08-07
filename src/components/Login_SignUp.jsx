@@ -3,6 +3,7 @@ import image10 from '../static/images/image 10.png';
 import { Checkbox, styled } from "@mui/material";
 import { useState } from "react";
 import PasswordInput from './pass_inp';
+import OTP_UI from './OTP';
 
 const Input = styled('input')({
     border: 'none',
@@ -19,11 +20,40 @@ const Button = styled('button')({
     textAlign: 'center',
     fontSize: "25px",
     height: "50px",
-    cursor: "grab"
+    cursor: "pointer"
+})
+
+const ButtonA = styled('button')({
+    border: 'none',
+    marginLeft: '27%',
+    color: '-webkit-link',
+    background: 'none',
+    fontSize: '15px',
+    textDecoration: 'underline',
+    cursor: 'pointer'
 })
 
 export default function LoginSignUp() {
     const [acc, toggleAcc] = useState('login');
+    const [otp, showOtp] = useState('hide');
+    const [username, setusername] = useState('');
+    const [email, setemail] = useState('');
+    const [password, setpassword] = useState('');
+
+    const inputChange = (e) => {
+        console.log(email, username, password);
+        if (e.target.id === 'username')
+            setusername(e.target.value);
+        if (e.target.id === 'email')
+            setemail(e.target.value);
+    }
+
+    const handleOTP = () => {
+        if (otp === 'hide')
+            showOtp('show');
+        else
+            showOtp('hide');
+    };
 
     const handlebuttonclick = () => {
         if (acc === 'login')
@@ -32,18 +62,48 @@ export default function LoginSignUp() {
             toggleAcc('login');
     };
 
-    const handlechange = () => {
+
+    const handlechange = (e) => {
         let pass = document.getElementById('pass2');
         let cpass = document.getElementById('pass3');
-        console.log(pass.value, cpass.value);
+        const errorMsg = document.getElementById('errormsg');
+
         if (pass.value !== cpass.value) {
-            document.getElementById('errormsg').style.display = 'block';
+            errorMsg.style.display = 'block';
+            errorMsg.style.textAlign = 'center';
+            errorMsg.innerText = "Passwords don't match";
+            return;
         }
-        else {
-            document.getElementById('errormsg').style.display = 'none';
+
+        if (pass.value.length < 8) {
+            console.log(pass.value.length);
+            errorMsg.style.display = 'block';
+            errorMsg.style.textAlign = 'center';
+            errorMsg.innerText = 'Password must be 8 characters long';
+            return;
         }
+
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8}$/;
+
+        if (!passwordRegex.test(pass.value)) {
+            errorMsg.style.display = 'block';
+            errorMsg.style.textAlign = 'center';
+            errorMsg.innerText = 'Password must contain at least one uppercase letter,\n one lowercase letter, one number, and one special character';
+            return;
+        }
+
+        // If all validations pass, hide error message and set the password
+        errorMsg.style.display = 'none';
+        setpassword(e.target.value);
     };
 
+    const handleSubmit = (e) =>
+    {
+        if(!handlechange(e)){
+            e.preventDefault();
+            alert("Please enter correct credentials!");
+        }
+    }
     return (
         <div style={{ display: 'flex', justifyContent: "center" }}>
             <img src={image10} alt='10' />
@@ -52,58 +112,57 @@ export default function LoginSignUp() {
                     <img src={frame} alt='frame' style={{ width: '24px', height: '24px' }} />
                     <h4 style={{ marginLeft: '1%' }}>User Interface Enhancement for Access Database</h4>
                 </div>
-                {acc === 'login' ?
-                    <div>
-                        <h1>Welcome back</h1>
-                        <p style={{ fontSize: '20px' }}>Welcome back! Please enter your details.</p>
-                        <br />
-                        <form style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Input type='email' name='Email' placeholder='Email' />
-                            <PasswordInput id='pass1' placeholder="Password" />
-                            <div style={{alignItems:'center', display:'flex' }}>
-                                <p>Remember Me.</p>
-                                <Checkbox id='terms_conditions'></Checkbox>
-                                <a href='#' style={{ marginLeft:'27%' }}>Forgot Password.</a>
-                            </div>
-                            <Button>Log In</Button>
-                        </form>
-                        <p style={{ textAlign: 'center' }}>
-                            Don't have an account?
-                            <button onClick={handlebuttonclick}
-                                style={{ border: "none", background: 'none', fontSize: '15px', cursor: "grab" }}>
-                                <a style={{ marginLeft: '1%' }} href="#">
+                {otp === 'hide' ? (
+                    acc === 'login' ?
+                        <div>
+                            <h1>Welcome back</h1>
+                            <p style={{ fontSize: '20px' }}>Welcome back! Please enter your details.</p>
+                            <br />
+                            <form style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Input onchange={inputChange} type='email' name='Email' placeholder='Email' />
+                                <PasswordInput id='pass1' placeholder="Password" />
+                                <div style={{ alignItems: 'center', display: 'flex' }}>
+                                    <Checkbox id='terms_conditions' style={{ margin: '0' }}></Checkbox>
+                                    <p>Remember Me.</p>
+                                    <ButtonA onClick={handleOTP}>
+                                        Forgot Password</ButtonA>
+                                </div>
+                                <Button>Log In</Button>
+                            </form>
+                            <p style={{ textAlign: 'center' }}>
+                                Don't have an account?
+                                <ButtonA style={{ marginLeft: '1%' }} onClick={handlebuttonclick}>
                                     Signup
-                                </a>
-                            </button>
-                        </p>
-                    </div>
-                    :
-                    <div>
-                        <h1>Welcome back</h1>
-                        <p style={{ fontSize: '20px' }}>Welcome back! Please enter your details.</p>
-                        <br />
-                        <form style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Input type='text' name='username' placeholder='User Name' />
-                            <Input type='email' name='Email' placeholder='Email' />
-                            <PasswordInput id='pass2' placeholder="Password" />
-                            <p style={{ display: 'none', margin: '0', color: 'red' }} id='errormsg' >Password's don't match</p>
-                            <PasswordInput id='pass3' placeholder="Confirm Password" onchange={handlechange} />
-                            <div style={{ display:'flex' }}>
-                                <p>Agree to terms and conditions.</p>
-                                <Checkbox id='terms_conditions'></Checkbox>
-                            </div>
-                            <Button>Log In</Button>
-                        </form>
-                        <p style={{ textAlign: 'center' }}>
-                            Have an account?
-                            <button onClick={handlebuttonclick}
-                                style={{ border: "none", background: 'none', fontSize: '15px', cursor: "grab" }}>
-                                <a style={{ marginLeft: '1%' }} href='#'>
+                                </ButtonA>
+                            </p>
+                        </div>
+                        :
+                        <div>
+                            <h1>Welcome back</h1>
+                            <p style={{ fontSize: '20px' }}>Welcome back! Please enter your details.</p>
+                            <br />
+                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Input onChange={inputChange} id='username' type='text' name='username' placeholder='User Name' />
+                                <Input onChange={inputChange} id='email' type='email' name='Email' placeholder='Email' />
+                                <PasswordInput onchange={handlechange} id='pass2' placeholder="Password" />
+                                <p style={{ display: 'none', margin: '0', color: 'red', fontSize: '15px' }} id='errormsg' >Password's don't match</p>
+                                <PasswordInput id='pass3' placeholder="Confirm Password" onchange={handlechange} />
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <Checkbox id='terms_conditions' required style={{ margin: '0' }}></Checkbox>
+                                    <p>Agree to terms and conditions.</p>
+                                </div>
+                                <Button>Sign Up</Button>
+                            </form>
+                            <p style={{ textAlign: 'center' }}>
+                                Have an account?
+                                <ButtonA style={{ margin: '0' }} onClick={handlebuttonclick}>
                                     Login.
-                                </a>
-                            </button>
-                        </p>
-                    </div>
+                                </ButtonA>
+                            </p>
+                        </div>
+                ) : (
+                    <OTP_UI />
+                )
                 }
             </div>
 

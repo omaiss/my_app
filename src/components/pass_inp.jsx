@@ -14,7 +14,7 @@ function PasswordInput({id, placeholder, onchange}) {
     const handleVisibilityToggle = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);
     };
-
+    
     return (
         <div style={{ position: 'relative' }}>
             <Input
@@ -24,8 +24,6 @@ function PasswordInput({id, placeholder, onchange}) {
                 name={placeholder}
                 placeholder={placeholder}
                 onChange={onchange}
-                pattern="\w{8}"
-                title="8 character password"
                 required
             />
             <i id={`visibilitybtn-${id}`} onClick={handleVisibilityToggle} style={{ cursor: 'pointer' }}>

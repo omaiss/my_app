@@ -1,11 +1,13 @@
-import './App.css';
-import LoginSignUp from './components/Login_SignUp.jsx'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LoginSignUp from './components/Login_SignUp';
 
 function App() {
   return (
-    <div>
-    <LoginSignUp />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginSignUp />} />
+      </Routes>
+    </Router>
   );
 }
 
