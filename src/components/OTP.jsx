@@ -41,18 +41,57 @@ export default function OTP_UI({ email }) {
             e.target.nextSibling.focus()
         }
     }
-    const checkOTP = () => {
 
-    }
+    const checkOTP = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch('http://localhost:5000/verify-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, otp: otp.join('') }),
+            });
 
-    const resendOTP = () => {
+            const data = await response.json();
+            if (data.success) {
+                alert('OTP verified successfully!');
+                window.location.reload();
+                // Proceed with the next steps (e.g., navigating to another page)
+            } else {
+                alert('Invalid OTP. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error verifying OTP:', error);
+            alert('There was an error verifying the OTP. Please try again later.');
+        }
+    };
 
-    }
+    const resendOTP = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/send-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+    
+            const data = await response.json();
+            if (data.success) {
+                console.log('OTP sent successfully');                
+            } else {
+                alert('Failed to send OTP');
+            }
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+        }
+    };
 
     return (
         <>
             <p style={{ fontSize: '22px', fontFamily: 'Arial', textAlign: 'center' }}>
-                Please enter the OTP sent you at {email}
+                Please enter the OTP sent you at <br /> {email}
             </p>
             <form>
                 <div>
@@ -68,7 +107,7 @@ export default function OTP_UI({ email }) {
                         padding: '15px',
                         borderRadius: '15px',
                         fontSize: '30px',
-                        background: '#3333f3',
+                        background: 'black',
                         color: 'white',
                         width: '100%',
                         border: 'none',

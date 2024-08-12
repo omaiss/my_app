@@ -48,11 +48,47 @@ export default function LoginSignUp() {
             setemail(e.target.value);
     }
 
-    const handleOTP = () => {
+    const handleOTP = async () => {
         if (otp === 'hide')
             showOtp('show');
         else
             showOtp('hide');
+
+        if (!username || !email || !password) {
+            alert('Please fill out all the fields first');
+            showOtp('hide');
+            return;
+        }
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+
+        const newUser = {
+            username,
+            email,
+            password
+        };
+
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        try {
+            const response = await fetch('http://localhost:5000/send-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                console.log('OTP sent successfully');
+                showOtp('show'); // Assuming this function shows the OTP input UI
+            } else {
+                alert('Failed to send OTP');
+            }
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+        }
     };
 
     const handlebuttonclick = () => {
@@ -83,7 +119,7 @@ export default function LoginSignUp() {
             return;
         }
 
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8}$/;
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
         if (!passwordRegex.test(pass.value)) {
             errorMsg.style.display = 'block';
@@ -97,13 +133,30 @@ export default function LoginSignUp() {
         setpassword(e.target.value);
     };
 
-    const handleSubmit = (e) =>
-    {
-        if(!handlechange(e)){
+    const handleSubmit = (e) => {
+        if (!handlechange(e)) {
             e.preventDefault();
             alert("Please enter correct credentials!");
         }
-    }
+    };
+
+    const handleLogin = async () => {
+        let userEmailInput = document.getElementById('useremail').value;
+        let userPasswordInput = document.getElementById('userpassword').value;
+
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        // Check if there is a user with matching email and password
+        const user = users.find(user => user.email === userEmailInput && user.password === userPasswordInput);
+
+
+        if (user) {
+            alert('Login successful!');
+            window.location.reload();
+        } else {
+            alert('Invalid email or password.');
+        }
+    };
+
     return (
         <div style={{ display: 'flex', justifyContent: "center" }}>
             <img src={image10} alt='10' />
@@ -118,13 +171,16 @@ export default function LoginSignUp() {
                             <h1>Welcome back</h1>
                             <p style={{ fontSize: '20px' }}>Welcome back! Please enter your details.</p>
                             <br />
-                            <form style={{ display: 'flex', flexDirection: 'column' }}>
-                                <Input onchange={inputChange} type='email' name='Email' placeholder='Email' />
-                                <PasswordInput id='pass1' placeholder="Password" />
+                            <form style={{ display: 'flex', flexDirection: 'column' }} onSubmit={(e) => {
+                                e.preventDefault();
+                                handleLogin();
+                            }}>
+                                <Input id='useremail' type='email' name='Email' placeholder='Email' />
+                                <PasswordInput id='userpassword' placeholder="Password" />
                                 <div style={{ alignItems: 'center', display: 'flex' }}>
                                     <Checkbox id='terms_conditions' style={{ margin: '0' }}></Checkbox>
                                     <p>Remember Me.</p>
-                                    <ButtonA onClick={handleOTP}>
+                                    <ButtonA>
                                         Forgot Password</ButtonA>
                                 </div>
                                 <Button>Log In</Button>
@@ -151,7 +207,7 @@ export default function LoginSignUp() {
                                     <Checkbox id='terms_conditions' required style={{ margin: '0' }}></Checkbox>
                                     <p>Agree to terms and conditions.</p>
                                 </div>
-                                <Button>Sign Up</Button>
+                                <Button onClick={handleOTP}>Sign Up </Button>
                             </form>
                             <p style={{ textAlign: 'center' }}>
                                 Have an account?
@@ -160,9 +216,8 @@ export default function LoginSignUp() {
                                 </ButtonA>
                             </p>
                         </div>
-                ) : (
-                    <OTP_UI />
-                )
+                ) :
+                    (<OTP_UI email={email} />)
                 }
             </div>
 
