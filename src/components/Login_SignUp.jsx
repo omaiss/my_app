@@ -71,7 +71,7 @@ export default function LoginSignUp() {
         localStorage.setItem('users', JSON.stringify(users));
 
         try {
-            const response = await fetch('http://localhost:5000/send-otp', {
+            const response = await fetch('http://localhost:5000/app/useradd', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
