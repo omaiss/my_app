@@ -4,6 +4,7 @@ import { Checkbox, styled } from "@mui/material";
 import { useState } from "react";
 import PasswordInput from './pass_inp';
 import OTP_UI from './OTP';
+import axios from 'axios';
 
 const Input = styled('input')({
     border: 'none',
@@ -48,12 +49,8 @@ export default function LoginSignUp() {
             setemail(e.target.value);
     }
 
-    const handleOTP = async () => {
-        if (otp === 'hide')
-            showOtp('show');
-        else
-            showOtp('hide');
-
+    const handleOTP = async () => {  
+        
         if (!username || !email || !password) {
             alert('Please fill out all the fields first');
             showOtp('hide');
@@ -69,25 +66,26 @@ export default function LoginSignUp() {
 
         users.push(newUser);
         localStorage.setItem('users', JSON.stringify(users));
+        const formData = { 
+            username: username, 
+            email: email,
+            password: password
+        }
 
-        try {
-            const response = await fetch('http://localhost:5000/app/useradd', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                console.log('OTP sent successfully');
-                showOtp('show'); // Assuming this function shows the OTP input UI
-            } else {
-                alert('Failed to send OTP');
+        try{
+            const response = await axios.post('http://127.0.0.1:8000/app/useradd/', formData);
+            const message = response.data.message;
+            if (message && response.status === 200){
+                console.log(message);
+                if (otp === 'hide')
+                    showOtp('show');
+                else
+                    showOtp('hide');
             }
-        } catch (error) {
-            console.error('Error sending OTP:', error);
+            else console.log(message)
+        }catch(error){
+            console.log(error);        
+            return;
         }
     };
 
@@ -140,20 +138,27 @@ export default function LoginSignUp() {
         }
     };
 
-    const handleLogin = async () => {
+    const handleLogin = async (e) => {
+        e.preventDefault();
         let userEmailInput = document.getElementById('useremail').value;
         let userPasswordInput = document.getElementById('userpassword').value;
 
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        // Check if there is a user with matching email and password
-        const user = users.find(user => user.email === userEmailInput && user.password === userPasswordInput);
-
-
-        if (user) {
-            alert('Login successful!');
-            window.location.reload();
-        } else {
-            alert('Invalid email or password.');
+        const user_data = {
+            email: userEmailInput,
+            password: userPasswordInput
+        }
+        try{
+            const response = await axios.post('http://127.0.0.1:8000/app/userlogin/', user_data);
+            console.log(response.status);
+            if (response.status === 200) {
+                alert('Login successful!');
+                window.location.reload();
+            } else {
+                alert('Invalid email or password.');
+            }
+        }
+        catch (error){
+            console.log(error);
         }
     };
 
@@ -171,10 +176,7 @@ export default function LoginSignUp() {
                             <h1>Welcome back</h1>
                             <p style={{ fontSize: '20px' }}>Welcome back! Please enter your details.</p>
                             <br />
-                            <form style={{ display: 'flex', flexDirection: 'column' }} onSubmit={(e) => {
-                                e.preventDefault();
-                                handleLogin();
-                            }}>
+                            <form style={{ display: 'flex', flexDirection: 'column' }} onSubmit={handleLogin}>
                                 <Input id='useremail' type='email' name='Email' placeholder='Email' />
                                 <PasswordInput id='userpassword' placeholder="Password" />
                                 <div style={{ alignItems: 'center', display: 'flex' }}>

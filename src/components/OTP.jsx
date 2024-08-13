@@ -1,5 +1,6 @@
 import { styled } from "@mui/material";
 import React, { useState } from "react";
+import axios from 'axios';
 
 const Input = styled('input')({
     border: '1px solid',
@@ -33,7 +34,7 @@ const ButtonA = styled('button')({
 
 export default function OTP_UI({ email }) {
     const [otp, setOTP] = useState(new Array(6).fill(""))
-
+    
     const handleChange = (e, index) => {
         if (isNaN(e.target.value)) return false;
         setOTP([...otp.map((data, indx) => (indx === index ? e.target.value : data))])
@@ -44,41 +45,29 @@ export default function OTP_UI({ email }) {
 
     const checkOTP = async (e) => {
         e.preventDefault();
+        const otp_data = {
+            email: email,
+            otp: otp,
+        }
         try {
-            const response = await fetch('http://localhost:5000/verify-otp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, otp: otp.join('') }),
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                alert('OTP verified successfully!');
-                window.location.reload();
-                // Proceed with the next steps (e.g., navigating to another page)
+            const response = await axios.post('http://127.0.0.1:8000/app/userverify/', otp_data)
+            console.log(response.status);
+            if (response.status === 200) {
+                console.log(response.data.message);  
+                window.location.reload();              
             } else {
-                alert('Invalid OTP. Please try again.');
+                alert('Wrong Otp');
             }
         } catch (error) {
-            console.error('Error verifying OTP:', error);
-            alert('There was an error verifying the OTP. Please try again later.');
+            console.error(error);
         }
     };
 
     const resendOTP = async () => {
         try {
-            const response = await fetch('http://localhost:5000/send-otp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email }),
-            });
-    
-            const data = await response.json();
-            if (data.success) {
+            const response = await axios.post('http://localhost:8000/app/resendotp/', {email:email})                
+            
+            if (response.status === 200) {
                 console.log('OTP sent successfully');                
             } else {
                 alert('Failed to send OTP');
